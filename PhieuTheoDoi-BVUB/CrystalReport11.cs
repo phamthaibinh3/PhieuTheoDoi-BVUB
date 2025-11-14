@@ -16,9 +16,9 @@ namespace PhieuTheoDoi_BVUB {
     using CrystalDecisions.CrystalReports.Engine;
     
     
-    public class CrystalReport1 : ReportClass {
+    public class CrystalReport11 : ReportClass {
         
-        public CrystalReport1() {
+        public CrystalReport11() {
         }
         
         public override string ResourceName {
@@ -90,9 +90,9 @@ namespace PhieuTheoDoi_BVUB {
     }
     
     [System.Drawing.ToolboxBitmapAttribute(typeof(CrystalDecisions.Shared.ExportOptions), "report.bmp")]
-    public class CachedCrystalReport1 : Component, ICachedReport {
+    public class CachedCrystalReport11 : Component, ICachedReport {
         
-        public CachedCrystalReport1() {
+        public CachedCrystalReport11() {
         }
         
         [Browsable(false)]
@@ -129,7 +129,7 @@ namespace PhieuTheoDoi_BVUB {
         }
         
         public virtual CrystalDecisions.CrystalReports.Engine.ReportDocument CreateReport() {
-            CrystalReport1 rpt = new CrystalReport1();
+            CrystalReport11 rpt = new CrystalReport11();
             rpt.Site = this.Site;
             return rpt;
         }

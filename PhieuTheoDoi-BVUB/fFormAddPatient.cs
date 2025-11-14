@@ -1,494 +1,488 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
+﻿using BVUB_PhieuTheoDoi.DAO;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Data;
-using BVUB_PhieuTheoDoi.DAO;
 using System.Data.SqlClient;
+using System.Windows.Forms;
+using System.Globalization;
 
 namespace BVUB_PhieuTheoDoi
 {
     public partial class fFormAddPatient : Form
     {
         // =========================================================
-        //                 KHAI BÁO CỐ ĐỊNH & BIẾN (Cập nhật tên bảng)
+        //                 KHAI BÁO BIẾN CỐ ĐỊNH (Tên Bảng)
         // =========================================================
         private const string PatientTable = "BenhNhan";
-        private const string MonitoringSheetTable = "TheoDoi"; // Đã đổi từ PhieuTheoDoi sang TheoDoi
-        private readonly string _patientIdToUpdate = null;
-        private readonly bool _isUpdateMode = false;
+        private const string MonitoringSheetTable = "TheoDoi";
+        private const string KhoaTable = "Khoa";
+        private const string DieuDuongTable = "DieuDuong";
 
-        // Cần đảm bảo rằng các TextBox/RichTextBox tương ứng trong Designer đã được đặt tên như sau:
-        // txtHoTen, txtTuoi, rdbNam, rdbNu, txtPhong, txtGiuong, cboKhoa, txtChanDoan, 
-        // chkDiUngCo, chkDiUngKhong, txtTienSuDiUng (cho ChiTietDiUng),
-        // rtbTriGiac, rtbDaNiemMac, rtbTinhTrangPhu, txtMach, txtNhietDo, txtHuyetAp, txtTSTho, txtSpO2,
-        // rtbTuanHoan, rtbHoHap, rtbTieuHoa, rtbDinhDuong, rtbTietNieu, rtbThanKinh, rtbCoXuongKhop, rtbNhanDinhKhac (cho NDK_Khac),
-        // rtbChanDoanDD, rtbCanThiepDD
+        // Biến để lưu trữ MaDieuDuong hiện tại (Cần truyền từ Form đăng nhập/Form chính)
+        private string MaDieuDuongLoggedIn = "DD001"; // <--- CẦN THAY ĐỔI THEO THỰC TẾ 
 
         // =========================================================
         //                 CONSTRUCTOR & KHỞI TẠO
         // =========================================================
-
-        // Constructor cho chế độ THÊM mới
         public fFormAddPatient()
         {
             InitializeComponent();
-            _isUpdateMode = false;
+            this.Load += fFormAddPatient_Load;
+            this.btnSave.Click += btnSave_Click;
 
-            LoadKhoaData();
-            SetupEventHandlers();
+            // *** Đăng ký sự kiện CheckBox Dị ứng ***
+            this.chkDiUngCo.CheckedChanged += ChkDiUng_CheckedChanged;
+            this.chkDiUngKhong.CheckedChanged += ChkDiUng_CheckedChanged;
+            // **********************************************
 
-            lblMaBenhNhanValue.Text = GenerateNewPatientId();
-            this.Text = "Thêm Phiếu Theo Dõi Mới";
-            btnSave.Text = "Thêm Mới";
+            // Thiết lập giá trị mặc định cho ComboBox nếu cần
+            cboGioiTinh.Items.AddRange(new string[] { "Nam", "Nữ", "Khác" });
+            cboPhanCapCS.Items.AddRange(new string[] { "Cấp I", "Cấp II", "Cấp III" });
 
-            chkDiUngKhong.Checked = true;
+            // Mặc định chọn giá trị đầu tiên (hoặc giá trị mong muốn)
+            if (cboGioiTinh.Items.Count > 0) cboGioiTinh.SelectedIndex = 0;
+            if (cboPhanCapCS.Items.Count > 0) cboPhanCapCS.SelectedIndex = 0;
+
+            // Mặc định chọn 'Không' cho dị ứng khi form khởi tạo
+            if (chkDiUngKhong != null) chkDiUngKhong.Checked = true;
         }
 
         // =========================================================
-        //                 SETUP VÀ TẢI DỮ LIỆU BAN ĐẦU
+        //                 SỰ KIỆN LOAD FORM
         // =========================================================
-
-        private void SetupEventHandlers()
+        private void fFormAddPatient_Load(object sender, EventArgs e)
         {
-            btnSave.Click += btnSave_Click;
-            chkDiUngCo.CheckedChanged += chkDiUngCo_CheckedChanged;
-            chkDiUngKhong.CheckedChanged += chkDiUngKhong_CheckedChanged;
-            btnCancel.Click += (sender, e) => this.Close();
+            LoadKhoaData();
+            LoadDieuDuongData();
+            DisplayLoggedInNurseName();
+
+            // 1. TỰ ĐỘNG TẠO MÃ BỆNH NHÂN & SỐ VÀO VIỆN
+            txtMaBenhNhan.Text = GenerateNewMaBenhNhan();
+            txtSoVaoVien.Text = GenerateNewSoVaoVien();
+            txtMaBenhNhan.ReadOnly = true; // Không cho sửa
+            txtSoVaoVien.ReadOnly = true; // Không cho sửa
+
+            // 2. KHỞI TẠO TRẠNG THÁI HIỂN THỊ DỊ ỨNG
+            SetTienSuDiUngVisibility();
+        }
+
+        private void DisplayLoggedInNurseName()
+        {
+            // Hiển thị tên điều dưỡng đang đăng nhập
+            try
+            {
+                string query = $"SELECT HoTen FROM {DieuDuongTable} WHERE MaDieuDuong = @MaDieuDuong";
+                DataTable result = DataProvider.Instance.ExecuteQueryWithParams(query, new Dictionary<string, object> { { "MaDieuDuong", MaDieuDuongLoggedIn } });
+                if (result.Rows.Count > 0)
+                {
+                    txtDieuDuongKyTen.Text = result.Rows[0]["HoTen"].ToString();
+                    txtDieuDuongKyTen.ReadOnly = true; // Không cho sửa tên người ký
+                }
+                else
+                {
+                    txtDieuDuongKyTen.Text = "Không tìm thấy điều dưỡng";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải thông tin Điều dưỡng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void LoadKhoaData()
         {
             try
             {
-                // Cập nhật: Sử dụng KhoaID làm ValueMember
-                string query = "SELECT KhoaID, TenKhoa FROM Khoa";
-                DataTable dtKhoa = DataProvider.Instance.ExecuteQuery(query);
+                string query = $"SELECT * FROM {KhoaTable}";
+                DataTable dt = DataProvider.Instance.ExecuteQuery(query);
 
-                if (dtKhoa != null && dtKhoa.Rows.Count > 0)
-                {
-                    cboKhoa.DataSource = dtKhoa;
-                    cboKhoa.DisplayMember = "TenKhoa";
-                    cboKhoa.ValueMember = "KhoaID"; // Sửa: KhoaID
-                    cboKhoa.SelectedIndex = -1;
-                }
+                cboTenKhoa.DataSource = dt;
+                cboTenKhoa.DisplayMember = "TenKhoa";
+                cboTenKhoa.ValueMember = "KhoaID";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi tải dữ liệu Khoa: {ex.Message}\nKiểm tra lại chuỗi kết nối Database.", "Lỗi DB", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                System.Diagnostics.Debug.WriteLine("Lỗi LoadKhoaData: " + ex.Message);
+                MessageBox.Show("Lỗi tải danh sách Khoa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private string GenerateNewPatientId()
+        private void LoadDieuDuongData()
         {
-            string prefix = "BN" + DateTime.Now.ToString("yyyyMMdd");
-            int maxSuffix = 0;
-
             try
             {
-                // Logic tạo mã bệnh nhân dựa trên DB
-                string query = $@"
-                    SELECT MAX(CAST(SUBSTRING(MaBenhNhan, 11, 3) AS INT)) 
-                    FROM {PatientTable} 
-                    WHERE MaBenhNhan LIKE '{prefix}%'";
-
-                object result = DataProvider.Instance.ExecuteScalar(query);
-
-                if (result != null && result != DBNull.Value)
-                {
-                    if (int.TryParse(result.ToString(), out int parsedMaxSuffix))
-                    {
-                        maxSuffix = parsedMaxSuffix;
-                    }
-                }
+                string query = $"SELECT MaDieuDuong, HoTen FROM {DieuDuongTable}";
+                DataTable dt = DataProvider.Instance.ExecuteQuery(query);
+                // Nếu muốn cho phép chọn điều dưỡng ký tên (thay vì dùng MaDieuDuongLoggedIn)
+                // cboDieuDuongKyTen.DataSource = dt;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Lỗi GenerateNewPatientId: " + ex.Message);
-                maxSuffix = 0;
+                MessageBox.Show("Lỗi tải danh sách Điều dưỡng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            return prefix + (maxSuffix + 1).ToString("D3");
         }
 
         // =========================================================
-        //                 XỬ LÝ SỰ KIỆN FORM
+        //                 HÀM TẠO MÃ TỰ ĐỘNG
         // =========================================================
 
-        private void chkDiUngCo_CheckedChanged(object sender, EventArgs e)
+        private string GenerateNewMaBenhNhan()
         {
-            if (chkDiUngCo.Checked)
+            // Lấy mã lớn nhất hiện có
+            string query = $"SELECT MAX(MaBenhNhan) FROM {PatientTable}";
+            object result = DataProvider.Instance.ExecuteScalar(query);
+
+            string currentMaxID = result != DBNull.Value && result != null ? result.ToString() : "BN0000";
+
+            // Xử lý tăng số
+            if (currentMaxID.StartsWith("BN") && currentMaxID.Length > 2)
             {
+                if (int.TryParse(currentMaxID.Substring(2), out int number))
+                {
+                    // Định dạng số 4 chữ số (D4)
+                    return "BN" + (number + 1).ToString("D4");
+                }
+            }
+            return "BN0001";
+        }
+
+        private string GenerateNewSoVaoVien()
+        {
+            // Ép kiểu sang BIGINT để đảm bảo an toàn số lớn khi MAX
+            string query = $"SELECT MAX(CAST(SoVaoVien AS BIGINT)) FROM {PatientTable} WHERE ISNUMERIC(SoVaoVien) = 1";
+            object result = DataProvider.Instance.ExecuteScalar(query);
+
+            if (result != DBNull.Value && result != null && long.TryParse(result.ToString(), out long number))
+            {
+                return (number + 1).ToString();
+            }
+            return "100001"; // Giá trị mặc định ban đầu
+        }
+
+        // =========================================================
+        //                 LOGIC ẨN/HIỆN TIỀN SỬ DỊ ỨNG
+        // =========================================================
+
+        private void SetTienSuDiUngVisibility()
+        {
+            // Textbox dị ứng và Label chỉ hiện khi checkbox 'Có' được chọn
+            txtTienSuDiUng.Visible = chkDiUngCo.Checked;
+            // Giả sử có labelTienSuDiUng đi kèm
+            // labelTienSuDiUng.Visible = chkDiUngCo.Checked; 
+
+            // Nếu không hiện (tức là chọn 'Không'), xóa nội dung
+            if (!chkDiUngCo.Checked)
+            {
+                txtTienSuDiUng.Text = string.Empty;
+            }
+        }
+
+        private void ChkDiUng_CheckedChanged(object sender, EventArgs e)
+        {
+            CheckBox current = sender as CheckBox;
+
+            if (current == chkDiUngCo && current.Checked)
+            {
+                // Nếu chọn 'Có', bỏ chọn 'Không'
                 chkDiUngKhong.Checked = false;
-                txtTienSuDiUng.Enabled = true;
-                txtTienSuDiUng.Focus();
             }
-            else
+            else if (current == chkDiUngKhong && current.Checked)
             {
-                if (!chkDiUngKhong.Checked) chkDiUngKhong.Checked = true;
-                txtTienSuDiUng.Enabled = false;
-                txtTienSuDiUng.Clear();
-            }
-        }
-
-        private void chkDiUngKhong_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkDiUngKhong.Checked)
-            {
+                // Nếu chọn 'Không', bỏ chọn 'Có'
                 chkDiUngCo.Checked = false;
-                txtTienSuDiUng.Enabled = false;
-                txtTienSuDiUng.Clear();
             }
-            else
-            {
-                if (!chkDiUngCo.Checked) chkDiUngCo.Checked = true;
-                txtTienSuDiUng.Enabled = true;
-            }
+
+            // Cập nhật trạng thái hiển thị
+            SetTienSuDiUngVisibility();
         }
 
+        // =========================================================
+        //                 SỰ KIỆN LƯU (SAVE)
+        // =========================================================
         private void btnSave_Click(object sender, EventArgs e)
         {
-            // 1. Kiểm tra Dữ liệu Bắt Buộc
-            if (string.IsNullOrWhiteSpace(txtHoTen.Text) || cboKhoa.SelectedValue == null)
+            if (string.IsNullOrEmpty(txtMaBenhNhan.Text) || string.IsNullOrEmpty(txtHoTen.Text) ||
+                string.IsNullOrEmpty(txtSoVaoVien.Text) || cboTenKhoa.SelectedValue == null)
             {
-                MessageBox.Show("Vui lòng nhập Họ Tên và chọn Khoa.", "Thiếu Thông Tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin bắt buộc (Mã BN, Họ Tên, Số Vào Viện, Khoa).", "Thiếu thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 2. Thu thập dữ liệu từ Form
-            Dictionary<string, object> allFormData = CollectFormData();
-
-            // 3. Thực hiện Lưu trữ
-            bool saveSuccess = SavePatientRecordInternal(allFormData);
-
-            if (saveSuccess)
+            // Kiểm tra trường hợp chọn 'Có' dị ứng mà chưa nhập chi tiết
+            if (chkDiUngCo.Checked && string.IsNullOrEmpty(txtTienSuDiUng.Text.Trim()))
             {
-                MessageBox.Show($"Đã thêm mới thành công bệnh nhân {txtHoTen.Text} (Mã BN: {lblMaBenhNhanValue.Text}) vào cơ sở dữ liệu.", "Thành Công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+                MessageBox.Show("Vui lòng nhập chi tiết tiền sử dị ứng.", "Thiếu thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            else
-            {
-                MessageBox.Show("Đã xảy ra lỗi trong quá trình lưu dữ liệu. Vui lòng kiểm tra log lỗi (Debug Output) và kết nối database.", "Lỗi Lưu Trữ", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        // =========================================================
-        //                 LOGIC THU THẬP VÀ LƯU DỮ LIỆU
-        // =========================================================
-
-        private Dictionary<string, object> CollectFormData()
-        {
-            var data = new Dictionary<string, object>();
-
-            // Hàm chuyển đổi an toàn sang kiểu số (decimal/int)
-            Func<string, object> safeInt = (text) => int.TryParse(text, out int val) ? (object)val : DBNull.Value;
-            Func<string, object> safeDecimal = (text) => decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal val) ? (object)val : DBNull.Value;
-
-            // --- 1. HÀNH CHÍNH & TIỀN SỬ (Cho PatientTable) ---
-            data.Add("MaBenhNhan", lblMaBenhNhanValue.Text);
-            data.Add("HoTen", txtHoTen.Text);
-            data.Add("Tuoi", safeInt(txtTuoi.Text));
-            if (rdbNam.Checked)
-            {
-                data["GioiTinh"] = "Nam";
-            }
-            else if (rdbNu.Checked)
-            {
-                data["GioiTinh"] = "Nữ";
-            }
-            else
-            {
-                data["GioiTinh"] = DBNull.Value; // <<< Kiểm tra xem việc gán DBNull.Value có hợp lệ không
-            }
-            data.Add("Phong", txtPhong.Text);
-            data.Add("Giuong", txtGiuong.Text);
-            data.Add("KhoaID", cboKhoa.SelectedValue ?? DBNull.Value); // Sửa: KhoaID
-            data.Add("ChuanDoan", txtChanDoan.Text); // Sửa: ChuanDoan
-
-            // Xử lý TienSuDiUng (gộp 2 trường cũ thành 1)
-            string tienSuDiUng = chkDiUngCo.Checked ? txtTienSuDiUng.Text : "Không";
-            data.Add("TienSuDiUng", tienSuDiUng);
-
-            // Thêm các trường mới từ schema BenhNhan
-            data.Add("SoVaoVien", "N/A"); // Giả định giá trị mặc định nếu không có trường nhập
-            data.Add("SoTo", DBNull.Value); // Giả định DBNull nếu không có trường nhập
-
-            // --- 2. DỮ LIỆU PHIẾU THEO DÕI (Cho MonitoringSheetTable/TheoDoi) ---
-            // Sửa: ThoiGianGhiNhan
-            data.Add("ThoiGianGhiNhan", DateTime.Now);
-
-            // I. TOÀN TRẠNG
-            data.Add("TriGiac", rtbTriGiac.Text);
-            data.Add("DaNiemMac", rtbDaNiemMac.Text);
-            data.Add("Phu", rtbTinhTrangPhu.Text);
-
-            // II. DẤU HIỆU SINH TỒN
-            data.Add("TanSoMach", safeInt(txtMach.Text)); // Sửa: TanSoMach
-            data.Add("NhietDo", safeDecimal(txtNhietDo.Text));
-            data.Add("HuyetAp", txtHuyetAp.Text);
-            data.Add("TanSoTho", safeInt(txtTSTho.Text)); // Sửa: TanSoTho
-            data.Add("Spo2", safeDecimal(txtSpO2.Text)); // Sửa: Spo2
-
-            // III. CHỈ SỐ CÂN NẶNG, CHIỀU CAO (Giả định N/A nếu form không có)
-            data.Add("ChieuCao", DBNull.Value);
-            data.Add("CanNang", DBNull.Value);
-            data.Add("BMI", DBNull.Value);
-
-            // IV. TUẦN HOÀN (rtbTuanHoan)
-            data.Add("TinhChatMach", DBNull.Value); // Giả định N/A
-            data.Add("DHKhacTuanHoan", rtbTuanHoan.Text); // Ánh xạ vào đây
-
-            // V. HÔ HẤP (rtbHoHap)
-            data.Add("TinhTrangHoHap", rtbHoHap.Text); // Ánh xạ vào đây
-            data.Add("KieuTho", DBNull.Value);
-            data.Add("Ho", DBNull.Value);
-            data.Add("CheDoTho", DBNull.Value);
-            data.Add("DungTichSongVt", DBNull.Value);
-            data.Add("ApLucHoTroPS", DBNull.Value);
-            data.Add("PEEP", DBNull.Value);
-            data.Add("TanSoThoMay", DBNull.Value);
-            data.Add("Fio2", DBNull.Value);
-
-            // VI. TIÊU HÓA (rtbTieuHoa)
-            data.Add("TinhTrangBung", rtbTieuHoa.Text); // Ánh xạ vào đây
-            data.Add("RoiLoanNuot", DBNull.Value);
-            data.Add("DayBungKhoTieu", DBNull.Value);
-            data.Add("Non", DBNull.Value);
-            data.Add("NhuDongRuot", DBNull.Value);
-            data.Add("DaiTien", DBNull.Value);
-            data.Add("HauMonNhanTao", DBNull.Value);
-
-            // VII. DINH DƯỠNG (rtbDinhDuong)
-            data.Add("NguyCoSDD", DBNull.Value);
-            data.Add("CheDoAn", rtbDinhDuong.Text); // Ánh xạ vào đây
-            data.Add("TinhTrangAn", DBNull.Value);
-            data.Add("DuongAn", DBNull.Value);
-
-            // VIII. TIẾT NIỆU SINH DỤC (rtbTietNieu)
-            data.Add("HinhThucDiTieu", rtbTietNieu.Text); // Ánh xạ vào đây
-            data.Add("MauSacNuocTieu", DBNull.Value);
-            data.Add("SoLuongNuocTieu", DBNull.Value);
-            data.Add("TieuRatBuot", DBNull.Value);
-            data.Add("BoPhanSinhDuc", DBNull.Value);
-
-            // IX. THẦN KINH (rtbThanKinh)
-            data.Add("LoiNoi", DBNull.Value);
-            data.Add("YeuLiet", DBNull.Value);
-            data.Add("RoiLoanVanDong", DBNull.Value);
-            data.Add("DHKhacThanKinh", rtbThanKinh.Text); // Ánh xạ vào đây
-
-            // X. TINH THẦN, GIẤC NGỦ (rtbThanKinh)
-            data.Add("TinhThan", DBNull.Value);
-            data.Add("GiacNgu", DBNull.Value);
-
-            // XI. CƠ XƯƠNG KHỚP (rtbCoXuongKhop)
-            data.Add("VanDong", rtbCoXuongKhop.Text); // Ánh xạ vào đây
-            data.Add("VanDeKhacCXK", DBNull.Value);
-
-            // XII. NHẬN ĐỊNH KHÁC (rtbNhanDinhKhac)
-            data.Add("Dau", rtbNhanDinhKhac.Text); // Ánh xạ rtbNhanDinhKhac vào cột Đau
-            data.Add("VetThuongLoet", DBNull.Value);
-            data.Add("DanLuu", DBNull.Value);
-            data.Add("NguyCoNga", DBNull.Value);
-            data.Add("CanhBaoSom", DBNull.Value);
-
-            // XIII. THEO DÕI NHẬP/XUẤT
-            data.Add("TongNhap", DBNull.Value);
-            data.Add("TongXuat", DBNull.Value);
-
-            // XIV. PHÂN CẤP CHĂM SÓC
-            data.Add("PhanCapChamSoc", DBNull.Value);
-
-            // XV. CHẨN ĐOÁN ĐIỀU DƯỠNG (rtbChanDoanDD)
-            data.Add("CDDD1", rtbChanDoanDD.Text); // Ánh xạ CDD_ChanDoan vào CDDD1
-            data.Add("MucTieuCDDD1", DBNull.Value);
-            data.Add("CDDD2", DBNull.Value);
-            data.Add("MucTieuCDDD2", DBNull.Value);
-            data.Add("CDDD3", DBNull.Value);
-            data.Add("MucTieuCDDD3", DBNull.Value);
-            data.Add("CDDD4", DBNull.Value);
-            data.Add("MucTieuCDDD4", DBNull.Value);
-
-            // XVI. CAN THIỆP ĐIỀU DƯỠNG (rtbCanThiepDD)
-            data.Add("ThucHienYLenh", DBNull.Value);
-            data.Add("ThucHienCanLS", DBNull.Value);
-            data.Add("ChamSocDieuDuong", rtbCanThiepDD.Text); // Ánh xạ CanThiepDD vào ChamSocDieuDuong
-
-            // XVII. BÀN GIAO
-            data.Add("BanGiao", DBNull.Value);
-
-            // MỤC 18: KÝ TÊN (Giả định chưa có MaDieuDuong)
-            data.Add("MaDieuDuong", DBNull.Value);
-
-            return data;
-        }
-
-        private bool SavePatientRecordInternal(Dictionary<string, object> allFormData)
-        {
-            // Tách dữ liệu thành 2 phần: BenhNhan và TheoDoi
-            var patientData = new Dictionary<string, object>()
-            {
-                { "MaBenhNhan", allFormData["MaBenhNhan"] },
-                { "HoTen", allFormData["HoTen"] },
-                { "Tuoi", allFormData["Tuoi"] },
-                { "GioiTinh", allFormData["GioiTinh"] },
-                { "Phong", allFormData["Phong"] },
-                { "Giuong", allFormData["Giuong"] },
-                { "KhoaID", allFormData["KhoaID"] }, // Sửa: KhoaID
-                { "ChuanDoan", allFormData["ChuanDoan"] }, // Sửa: ChuanDoan
-                { "TienSuDiUng", allFormData["TienSuDiUng"] }, // Sửa: TienSuDiUng (gộp)
-                { "SoVaoVien", allFormData["SoVaoVien"] },
-                { "SoTo", allFormData["SoTo"] }
-            };
-
-            // Tạo Monitoring Sheet Data với các trường của bảng TheoDoi
-            var monitoringSheetData = new Dictionary<string, object>()
-            {
-                { "MaBenhNhan", allFormData["MaBenhNhan"] },
-                { "ThoiGianGhiNhan", allFormData["ThoiGianGhiNhan"] },
-                { "MaDieuDuong", allFormData["MaDieuDuong"] },
-                { "TriGiac", allFormData["TriGiac"] },
-                { "DaNiemMac", allFormData["DaNiemMac"] },
-                { "Phu", allFormData["Phu"] },
-                { "TanSoMach", allFormData["TanSoMach"] },
-                { "HuyetAp", allFormData["HuyetAp"] },
-                { "TanSoTho", allFormData["TanSoTho"] },
-                { "NhietDo", allFormData["NhietDo"] },
-                { "Spo2", allFormData["Spo2"] },
-                { "ChieuCao", allFormData["ChieuCao"] },
-                { "CanNang", allFormData["CanNang"] },
-                { "BMI", allFormData["BMI"] },
-                { "TinhChatMach", allFormData["TinhChatMach"] },
-                { "DHKhacTuanHoan", allFormData["DHKhacTuanHoan"] },
-                { "TinhTrangHoHap", allFormData["TinhTrangHoHap"] },
-                { "KieuTho", allFormData["KieuTho"] },
-                { "Ho", allFormData["Ho"] },
-                { "CheDoTho", allFormData["CheDoTho"] },
-                { "DungTichSongVt", allFormData["DungTichSongVt"] },
-                { "ApLucHoTroPS", allFormData["ApLucHoTroPS"] },
-                { "PEEP", allFormData["PEEP"] },
-                { "TanSoThoMay", allFormData["TanSoThoMay"] },
-                { "Fio2", allFormData["Fio2"] },
-                { "TinhTrangBung", allFormData["TinhTrangBung"] },
-                { "RoiLoanNuot", allFormData["RoiLoanNuot"] },
-                { "DayBungKhoTieu", allFormData["DayBungKhoTieu"] },
-                { "Non", allFormData["Non"] },
-                { "NhuDongRuot", allFormData["NhuDongRuot"] },
-                { "DaiTien", allFormData["DaiTien"] },
-                { "HauMonNhanTao", allFormData["HauMonNhanTao"] },
-                { "NguyCoSDD", allFormData["NguyCoSDD"] },
-                { "CheDoAn", allFormData["CheDoAn"] },
-                { "TinhTrangAn", allFormData["TinhTrangAn"] },
-                { "DuongAn", allFormData["DuongAn"] },
-                { "HinhThucDiTieu", allFormData["HinhThucDiTieu"] },
-                { "MauSacNuocTieu", allFormData["MauSacNuocTieu"] },
-                { "SoLuongNuocTieu", allFormData["SoLuongNuocTieu"] },
-                { "TieuRatBuot", allFormData["TieuRatBuot"] },
-                { "BoPhanSinhDuc", allFormData["BoPhanSinhDuc"] },
-                { "LoiNoi", allFormData["LoiNoi"] },
-                { "YeuLiet", allFormData["YeuLiet"] },
-                { "RoiLoanVanDong", allFormData["RoiLoanVanDong"] },
-                { "DHKhacThanKinh", allFormData["DHKhacThanKinh"] },
-                { "TinhThan", allFormData["TinhThan"] },
-                { "GiacNgu", allFormData["GiacNgu"] },
-                { "VanDong", allFormData["VanDong"] },
-                { "VanDeKhacCXK", allFormData["VanDeKhacCXK"] },
-                { "Dau", allFormData["Dau"] },
-                { "VetThuongLoet", allFormData["VetThuongLoet"] },
-                { "DanLuu", allFormData["DanLuu"] },
-                { "NguyCoNga", allFormData["NguyCoNga"] },
-                { "CanhBaoSom", allFormData["CanhBaoSom"] },
-                { "TongNhap", allFormData["TongNhap"] },
-                { "TongXuat", allFormData["TongXuat"] },
-                { "PhanCapChamSoc", allFormData["PhanCapChamSoc"] },
-                { "CDDD1", allFormData["CDDD1"] },
-                { "MucTieuCDDD1", allFormData["MucTieuCDDD1"] },
-                { "CDDD2", allFormData["CDDD2"] },
-                { "MucTieuCDDD2", allFormData["MucTieuCDDD2"] },
-                { "CDDD3", allFormData["CDDD3"] },
-                { "MucTieuCDDD3", allFormData["MucTieuCDDD3"] },
-                { "CDDD4", allFormData["CDDD4"] },
-                { "MucTieuCDDD4", allFormData["MucTieuCDDD4"] },
-                { "ThucHienYLenh", allFormData["ThucHienYLenh"] },
-                { "ThucHienCanLS", allFormData["ThucHienCanLS"] },
-                { "ChamSocDieuDuong", allFormData["ChamSocDieuDuong"] },
-                { "BanGiao", allFormData["BanGiao"] }
-            };
-
 
             try
             {
-                // Sử dụng Transaction để đảm bảo BenhNhan và PhieuTheoDoi được lưu đồng thời
-                DataProvider.Instance.BeginTransaction();
-
-                // 1. THÊM MỚI BN (Insert into BenhNhan)
-                var (insertPatientQuery, insertPatientParams) = CreateInsertQuery(PatientTable, patientData);
-                DataProvider.Instance.ExecuteNonQueryWithParams(insertPatientQuery, insertPatientParams);
-
-                // 2. LƯU PHIẾU THEO DÕI (Insert new record into TheoDoi)
-                var (insertSheetQuery, insertSheetParams) = CreateInsertQuery(MonitoringSheetTable, monitoringSheetData);
-                DataProvider.Instance.ExecuteNonQueryWithParams(insertSheetQuery, insertSheetParams);
-
-                // 3. COMMIT TRANSACTION
-                DataProvider.Instance.CommitTransaction();
-                return true;
+                AddPatientAndSheet();
+                MessageBox.Show("Thêm mới Bệnh nhân và Phiếu theo dõi thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.Close(); // Đóng form sau khi thêm thành công
+            }
+            catch (SqlException sqlex)
+            {
+                if (sqlex.Number == 2627) // Lỗi khóa chính/Unique key
+                {
+                    MessageBox.Show("Mã Bệnh nhân hoặc Số Vào Viện đã tồn tại. Vui lòng kiểm tra lại.", "Lỗi trùng lặp", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show("Lỗi SQL khi thêm dữ liệu: " + sqlex.Message, "Lỗi SQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             catch (Exception ex)
             {
-                // 4. ROLLBACK khi có lỗi
-                DataProvider.Instance.RollbackTransaction();
-                System.Diagnostics.Debug.WriteLine("LỖI LƯU DỮ LIỆU (TRANSACTION ROLLED BACK): " + ex.Message);
-                return false;
+                MessageBox.Show("Lỗi khi thêm Bệnh nhân: " + ex.Message, "Lỗi chung", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // --- CÁC HÀM HỖ TRỢ (GIỮ NGUYÊN) ---
-
-        private (string query, Dictionary<string, object> parameters) CreateInsertQuery(string tableName, Dictionary<string, object> data)
+        // =========================================================
+        //                 HÀM THÊM BỆNH NHÂN VÀ PHIẾU
+        // =========================================================
+        private void AddPatientAndSheet()
         {
-            List<string> columns = new List<string>();
-            List<string> parameterNames = new List<string>();
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            DataProvider.Instance.BeginTransaction(); // Bắt đầu Transaction
 
-            foreach (var pair in data)
+            try
             {
-                columns.Add(pair.Key);
-                parameterNames.Add("@" + pair.Key);
-                parameters.Add(pair.Key, pair.Value);
+                // 1. THÊM VÀO BẢNG BENHNHAN
+                int patientResult = InsertPatient();
+
+                // 2. THÊM VÀO BẢNG THEODOI
+                int sheetResult = InsertMonitoringSheet();
+
+                if (patientResult > 0 && sheetResult > 0)
+                {
+                    DataProvider.Instance.CommitTransaction(); // Commit nếu cả hai đều thành công
+                }
+                else
+                {
+                    DataProvider.Instance.RollbackTransaction(); // Rollback nếu có vấn đề
+                    throw new Exception("Không thể thêm đủ thông tin Bệnh nhân và Phiếu Theo Dõi.");
+                }
             }
-
-            string columnList = string.Join(", ", columns);
-            string parameterList = string.Join(", ", parameterNames);
-
-            string query = $"INSERT INTO {tableName} ({columnList}) VALUES ({parameterList})";
-            return (query, parameters);
+            catch
+            {
+                DataProvider.Instance.RollbackTransaction(); // Rollback nếu có lỗi Exception
+                throw; // Ném lại lỗi để hàm gọi có thể bắt
+            }
         }
 
-        private (string query, Dictionary<string, object> parameters) CreateUpdateQuery(string tableName, Dictionary<string, object> data, string primaryKeyColumn, object primaryKeyValue)
+        // =========================================================
+        //                 HÀM INSERT BENHNHAN
+        // =========================================================
+        private int InsertPatient()
         {
-            List<string> setClauses = new List<string>();
-            Dictionary<string, object> parameters = new Dictionary<string, object>();
+            string query = $@"
+                INSERT INTO {PatientTable} (MaBenhNhan, HoTen, Tuoi, GioiTinh, Phong, Giuong, ChuanDoan, TienSuDiUng, KhoaID, SoVaoVien, SoTo)
+                VALUES (@MaBenhNhan, @HoTen, @Tuoi, @GioiTinh, @Phong, @Giuong, @ChuanDoan, @TienSuDiUng, @KhoaID, @SoVaoVien, @SoTo)
+            ";
 
-            foreach (var pair in data)
+            Dictionary<string, object> parameters = new Dictionary<string, object>
             {
-                if (pair.Key.Equals(primaryKeyColumn, StringComparison.OrdinalIgnoreCase)) continue;
+                { "MaBenhNhan", txtMaBenhNhan.Text.Trim() },
+                { "HoTen", txtHoTen.Text.Trim() },
+                { "Tuoi", ParseInt(txtTuoi.Text) },
+                { "GioiTinh", cboGioiTinh.SelectedItem?.ToString() },
+                { "Phong", txtPhong.Text },
+                { "Giuong", txtGiuong.Text },
+                { "ChuanDoan", rtbChanDoan.Text },
+                { "TienSuDiUng", GetTienSuDiUng() }, // Hàm xử lý checkbox
+                { "KhoaID", cboTenKhoa.SelectedValue },
+                { "SoVaoVien", txtSoVaoVien.Text.Trim() },
+                { "SoTo", txtSoTo.Text }
+            };
 
-                setClauses.Add($"{pair.Key} = @{pair.Key}");
-                parameters.Add(pair.Key, pair.Value);
-            }
-
-            parameters.Add(primaryKeyColumn, primaryKeyValue);
-
-            string setClause = string.Join(", ", setClauses);
-            string query = $"UPDATE {tableName} SET {setClause} WHERE {primaryKeyColumn} = @{primaryKeyColumn}";
-            return (query, parameters);
+            // Sử dụng ExecuteNonQueryWithParams và Transaction
+            return DataProvider.Instance.ExecuteNonQueryWithParams(query, parameters);
         }
 
-        // Placeholder cho các hàm load dữ liệu Cập nhật (nếu cần)
-        private void LoadPatientData(string patientId) { }
-        private void LoadMonitoringSheetData(string sheetId) { }
+        // =========================================================
+        //                 HÀM INSERT THEODOI (Phiếu đầu tiên)
+        // =========================================================
+        private int InsertMonitoringSheet()
+        {
+            string query = $@"
+                INSERT INTO {MonitoringSheetTable} (
+                    MaBenhNhan, ThoiGianGhiNhan, MaDieuDuong,
+                    TriGiac, DaNiemMac, Phu, TanSoMach, HuyetAp, TanSoTho, NhietDo, Spo2,
+                    ChieuCao, CanNang, BMI, TinhChatMach, DHKhacTuanHoan,
+                    TinhTrangHoHap, KieuTho, Ho, CheDoTho, DungTichSongVt, ApLucHoTroPS, PEEP, TanSoThoMay, Fio2,
+                    TinhTrangBung, RoiLoanNuot, DayBungKhoTieu, Non, NhuDongRuot, DaiTien, HauMonNhanTao,
+                    NguyCoSDD, CheDoAn, TinhTrangAn, DuongAn,
+                    HinhThucDiTieu, MauSacNuocTieu, SoLuongNuocTieu, TieuRatBuot, BoPhanSinhDuc,
+                    LoiNoi, YeuLiet, RoiLoanVanDong, DHKhacThanKinh, TinhThan, GiacNgu,
+                    VanDong, VanDeKhacCXK,
+                    Dau, VetThuongLoet, DanLuu, NguyCoNga, CanhBaoSom,
+                    TongNhap, TongXuat, PhanCapChamSoc,
+                    CDDD1, MucTieuCDDD1, CDDD2, MucTieuCDDD2, CDDD3, MucTieuCDDD3, CDDD4, MucTieuCDDD4,
+                    ThucHienYLenh, ThucHienCanLS, ChamSocDieuDuong, BanGiao
+                )
+                VALUES (
+                    @MaBenhNhan, @ThoiGianGhiNhan, @MaDieuDuong,
+                    @TriGiac, @DaNiemMac, @Phu, @TanSoMach, @HuyetAp, @TanSoTho, @NhietDo, @Spo2,
+                    @ChieuCao, @CanNang, @BMI, @TinhChatMach, @DHKhacTuanHoan,
+                    @TinhTrangHoHap, @KieuTho, @Ho, @CheDoTho, @DungTichSongVt, @ApLucHoTroPS, @PEEP, @TanSoThoMay, @Fio2,
+                    @TinhTrangBung, @RoiLoanNuot, @DayBungKhoTieu, @Non, @NhuDongRuot, @DaiTien, @HauMonNhanTao,
+                    @NguyCoSDD, @CheDoAn, @TinhTrangAn, @DuongAn,
+                    @HinhThucDiTieu, @MauSacNuocTieu, @SoLuongNuocTieu, @TieuRatBuot, @BoPhanSinhDuc,
+                    @LoiNoi, @YeuLiet, @RoiLoanVanDong, @DHKhacThanKinh, @TinhThan, @GiacNgu,
+                    @VanDong, @VanDeKhacCXK,
+                    @Dau, @VetThuongLoet, @DanLuu, @NguyCoNga, @CanhBaoSom,
+                    @TongNhap, @TongXuat, @PhanCapChamSoc,
+                    @CDDD1, @MucTieuCDDD1, @CDDD2, @MucTieuCDDD2, @CDDD3, @MucTieuCDDD3, @CDDD4, @MucTieuCDDD4,
+                    @ThucHienYLenh, @ThucHienCanLS, @ChamSocDieuDuong, @BanGiao
+                )
+            ";
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                // MỤC CHUNG
+                { "MaBenhNhan", txtMaBenhNhan.Text.Trim() },
+                { "ThoiGianGhiNhan", DateTime.Now },
+                { "MaDieuDuong", MaDieuDuongLoggedIn }, // Lấy từ biến logged in
+
+                // I. TOÀN TRẠNG
+                { "TriGiac", rtbTriGiac.Text },
+                { "DaNiemMac", rtbDaNiemMac.Text },
+                { "Phu", rtbPhu.Text },
+
+                // II. DẤU HIỆU SINH TỒN
+                { "TanSoMach", ParseInt(txtTanSoMach.Text) },
+                { "HuyetAp", txtHuyetAp.Text },
+                { "TanSoTho", ParseInt(txtTanSoTho.Text) },
+                { "NhietDo", ParseDecimal(txtNhietDo.Text) },
+                { "Spo2", ParseDecimal(txtSpO2.Text) },
+
+                // III. CHỈ SỐ CÂN NẶNG, CHIỀU CAO (Lấy từ Form)
+                { "ChieuCao", ParseDecimal(txtChieuCao.Text) },
+                { "CanNang", ParseDecimal(txtCanNang.Text) },
+                { "BMI", ParseDecimal(txtBMI.Text) },
+
+                // IV. TUẦN HOÀN
+                { "TinhChatMach", rtbTuanHoan.Text }, // Gộp TinhChatMach và DHKhacTuanHoan
+                { "DHKhacTuanHoan", DBNull.Value }, // Đặt là NULL/Default nếu đã gộp
+
+                // V. HÔ HẤP
+                { "TinhTrangHoHap", rtbTinhTrangHoHap.Text },
+                { "KieuTho", rtbKieuTho.Text },
+                { "Ho", rtbHo.Text },
+                { "CheDoTho", rtbCheDoTho.Text },
+                { "DungTichSongVt", ParseDecimal(txtDungTichSongVt.Text) },
+                { "ApLucHoTroPS", ParseDecimal(txtApLucHoTroPS.Text) },
+                { "PEEP", ParseDecimal(txtPEEP.Text) },
+                { "TanSoThoMay", ParseInt(txtTanSoThoMay.Text) },
+                { "Fio2", ParseDecimal(txtFio2.Text) },
+
+                // VI. TIÊU HÓA
+                { "TinhTrangBung", rtbTinhTrangBung.Text },
+                { "RoiLoanNuot", ToBit(chkRoiLoanNuot) },
+                { "DayBungKhoTieu", ToBit(chkDayBungKhoTieu) },
+                { "Non", rtbNon.Text },
+                { "NhuDongRuot", rtbNhuDongRuot.Text },
+                { "DaiTien", rtbDaiTien.Text },
+                { "HauMonNhanTao", ToBit(chkHauMonNhanTao) },
+
+                // VII. DINH DƯỠNG
+                { "NguyCoSDD", rtbNguyCoSDD.Text },
+                { "CheDoAn", rtbCheDoAn.Text },
+                { "TinhTrangAn", rtbTinhTrangAn.Text },
+                { "DuongAn", rtbDuongAn.Text },
+
+                // VIII. TIẾT NIỆU SINH DỤC
+                { "HinhThucDiTieu", rtbHinhThucDiTieu.Text },
+                { "MauSacNuocTieu", rtbMauSacNuocTieu.Text },
+                { "SoLuongNuocTieu", ParseDecimal(txtSoLuongNuocTieu.Text) },
+                { "TieuRatBuot", ToBit(chkTieuRatBuot) },
+                { "BoPhanSinhDuc", rtbBoPhanSD.Text },
+
+                // IX. THẦN KINH, X. TINH THẦN, GIẤC NGỦ (Gộp chung trong Designer)
+                { "LoiNoi", rtbThanKinh.Text }, // Dùng chung rtbThanKinh
+                { "YeuLiet", DBNull.Value },
+                { "RoiLoanVanDong", DBNull.Value },
+                { "DHKhacThanKinh", DBNull.Value },
+                { "TinhThan", DBNull.Value },
+                { "GiacNgu", DBNull.Value },
+
+                // XI. CƠ XƯƠNG KHỚP
+                { "VanDong", rtbCoXuongKhop.Text }, // Dùng chung rtbCoXuongKhop
+                { "VanDeKhacCXK", DBNull.Value },
+
+                // XII. NHẬN ĐỊNH KHÁC (Đã gộp vào rtbNhanDinhKhac)
+                { "Dau", rtbNhanDinhKhac.Text }, // Dùng chung rtbNhanDinhKhac
+                { "VetThuongLoet", DBNull.Value },
+                { "DanLuu", DBNull.Value },
+                { "NguyCoNga", DBNull.Value },
+                { "CanhBaoSom", DBNull.Value },
+
+                // XIII. THEO DÕI NHẬP/XUẤT
+                { "TongNhap", ParseDecimal(txtTongNhap.Text) },
+                { "TongXuat", ParseDecimal(txtTongXuat.Text) },
+
+                // XIV. PHÂN CẤP CHĂM SÓC
+                { "PhanCapChamSoc", cboPhanCapCS.SelectedItem?.ToString() },
+
+                // XV. CHẨN ĐOÁN ĐIỀU DƯỠNG (CDDD1-4)
+                { "CDDD1", rtbChanDoanDD.Text },
+                { "MucTieuCDDD1", rtbMucTieuCDDD1.Text },
+                { "CDDD2", rtbChanDoanDD2.Text },
+                { "MucTieuCDDD2", rtbMucTieuCDDD2.Text },
+                { "CDDD3", rtbChanDoanDD3.Text },
+                { "MucTieuCDDD3", rtbMucTieuCDDD3.Text },
+                { "CDDD4", rtbChanDoanDD4.Text },
+                { "MucTieuCDDD4", rtbMucTieuCDDD4.Text },
+
+                // XVI. CAN THIỆP ĐIỀU DƯỠNG
+                { "ThucHienYLenh", rtbCanThiepDD.Text }, // Dùng rtbCanThiepDD cho YLenh
+                { "ThucHienCanLS", DBNull.Value },
+                { "ChamSocDieuDuong", DBNull.Value },
+
+                // XVII. BÀN GIAO
+                { "BanGiao", rtbBanGiao.Text }
+            };
+
+            // Sử dụng ExecuteNonQueryWithParams và Transaction
+            return DataProvider.Instance.ExecuteNonQueryWithParams(query, parameters);
+        }
+
+        // =========================================================
+        //                 HÀM HỖ TRỢ CHUYỂN ĐỔI DỮ LIỆU
+        // =========================================================
+
+        // Xử lý TienSuDiUng từ CheckBox
+        private string GetTienSuDiUng()
+        {
+            if (chkDiUngKhong.Checked) return "Không";
+            if (chkDiUngCo.Checked) return txtTienSuDiUng.Text.Trim();
+            return null; // Không chọn
+        }
+
+        // Chuyển đổi CheckBox sang BIT (1/0)
+        private int ToBit(CheckBox chk)
+        {
+            return chk != null && chk.Checked ? 1 : 0;
+        }
+
+        // Chuyển đổi string sang INT (Có thể NULL)
+        private object ParseInt(string text)
+        {
+            if (int.TryParse(text, out int value))
+            {
+                return value;
+            }
+            return DBNull.Value;
+        }
+
+        // Chuyển đổi string sang DECIMAL (Có thể NULL)
+        private object ParseDecimal(string text)
+        {
+            // Sử dụng InvariantCulture để đảm bảo dấu chấm là dấu thập phân (ví dụ: 1.5)
+            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal value))
+            {
+                return value;
+            }
+            return DBNull.Value;
+        }
     }
 }

@@ -51,10 +51,10 @@ D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\stdole.dl
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.AssemblyReference.cache
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.exe.config
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.fFormReport.resources
-D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.Form1.resources
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi_BVUB.Properties.Resources.resources
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.GenerateResource.cache
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.CoreCompileInputs.cache
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuThe.E9A7B372.Up2Date
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.exe
 D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.pdb
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.Form1.resources

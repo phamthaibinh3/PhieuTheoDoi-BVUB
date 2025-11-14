@@ -172,5 +172,49 @@ namespace BVUB_PhieuTheoDoi.DAO
 
             return count;
         }
+
+        public DataTable ExecuteQueryWithParams(string query, Dictionary<string, object> parameters)
+        {
+            DataTable data = new DataTable();
+
+            // Dùng try-catch-finally để đảm bảo CloseConnection được gọi ngay cả khi có lỗi
+            try
+            {
+                OpenConnection(); // Mở kết nối nếu cần
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    // Gán transaction nếu có
+                    if (transaction != null) command.Transaction = transaction;
+
+                    // Thêm parameters
+                    foreach (var param in parameters)
+                    {
+                        // Xử lý giá trị null hoặc không giá trị (DBNull.Value)
+                        object value = param.Value ?? DBNull.Value;
+                        // Lưu ý: Tên tham số trong Dictionary KHÔNG cần có ký tự '@'
+                        command.Parameters.AddWithValue("@" + param.Key, value);
+                    }
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(data);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi hoặc xử lý lỗi tùy theo yêu cầu của ứng dụng
+                System.Diagnostics.Debug.WriteLine("Lỗi ExecuteQueryWithParams: " + ex.Message);
+                throw; // Ném lại lỗi để Form1 có thể bắt và hiển thị
+            }
+            finally
+            {
+                // Chỉ đóng kết nối nếu không có transaction đang quản lý
+                if (transaction == null) CloseConnection();
+            }
+
+            return data;
+        }
     }
 }
