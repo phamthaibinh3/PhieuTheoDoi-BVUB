@@ -94,20 +94,31 @@ namespace BVUB_PhieuTheoDoi.DAO
         public DataTable ExecuteQuery(string query)
         {
             DataTable data = new DataTable();
-            OpenConnection(); // Mở kết nối nếu cần
-
-            using (SqlCommand command = new SqlCommand(query, connection))
+            try
             {
-                // Nếu đang trong transaction, gán transaction cho command
-                if (transaction != null) command.Transaction = transaction;
+                OpenConnection(); // Mở kết nối nếu cần
 
-                using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    adapter.Fill(data);
+                    // Nếu đang trong transaction, gán transaction cho command
+                    if (transaction != null) command.Transaction = transaction;
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(data);
+                    }
                 }
             }
-
-            CloseConnection(); // Đóng kết nối nếu không có transaction
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi ExecuteQuery: " + ex.Message);
+                throw;
+            }
+            finally
+            {
+                // Chỉ đóng kết nối nếu không có transaction
+                if (transaction == null) CloseConnection();
+            }
             return data;
         }
 
@@ -115,15 +126,26 @@ namespace BVUB_PhieuTheoDoi.DAO
         public int ExecuteNonQuery(string query)
         {
             int count = 0;
-            OpenConnection(); // Mở kết nối nếu cần
-
-            using (SqlCommand command = new SqlCommand(query, connection))
+            try
             {
-                if (transaction != null) command.Transaction = transaction;
-                count = command.ExecuteNonQuery();
-            }
+                OpenConnection(); // Mở kết nối nếu cần
 
-            CloseConnection(); // Đóng kết nối nếu không có transaction
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    if (transaction != null) command.Transaction = transaction;
+                    count = command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi ExecuteNonQuery: " + ex.Message);
+                throw;
+            }
+            finally
+            {
+                // Chỉ đóng kết nối nếu không có transaction
+                if (transaction == null) CloseConnection();
+            }
             return count;
         }
 
@@ -131,44 +153,62 @@ namespace BVUB_PhieuTheoDoi.DAO
         public object ExecuteScalar(string query)
         {
             object data = null;
-            OpenConnection(); // Mở kết nối nếu cần
-
-            using (SqlCommand command = new SqlCommand(query, connection))
+            try
             {
-                if (transaction != null) command.Transaction = transaction;
-                data = command.ExecuteScalar();
-            }
+                OpenConnection(); // Mở kết nối nếu cần
 
-            // KHÔNG đóng kết nối nếu đang trong transaction (Rollback/Commit sẽ lo)
-            if (transaction == null) CloseConnection();
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    if (transaction != null) command.Transaction = transaction;
+                    data = command.ExecuteScalar();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi ExecuteScalar: " + ex.Message);
+                throw;
+            }
+            finally
+            {
+                // KHÔNG đóng kết nối nếu đang trong transaction (Rollback/Commit sẽ lo)
+                if (transaction == null) CloseConnection();
+            }
             return data;
         }
 
         public int ExecuteNonQueryWithParams(string query, Dictionary<string, object> parameters)
         {
             int count = 0;
-
-            using (SqlCommand command = new SqlCommand(query, connection))
+            try
             {
-                // Đảm bảo connection đã mở (nếu đang trong transaction, nó đã mở)
-                if (connection.State != ConnectionState.Open) OpenConnection();
+                OpenConnection(); // Đảm bảo kết nối được mở
 
-                // Gán transaction nếu có
-                if (transaction != null) command.Transaction = transaction;
-
-                // Thêm parameters
-                foreach (var param in parameters)
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    // Xử lý giá trị null hoặc không giá trị (DBNull.Value)
-                    object value = param.Value ?? DBNull.Value;
-                    command.Parameters.AddWithValue("@" + param.Key, value);
+                    // Gán transaction nếu có
+                    if (transaction != null) command.Transaction = transaction;
+
+                    // Thêm parameters
+                    foreach (var param in parameters)
+                    {
+                        // Xử lý giá trị null hoặc không giá trị (DBNull.Value)
+                        object value = param.Value ?? DBNull.Value;
+                        command.Parameters.AddWithValue("@" + param.Key, value);
+                    }
+
+                    count = command.ExecuteNonQuery();
                 }
-
-                count = command.ExecuteNonQuery();
             }
-
-            // Chỉ đóng kết nối nếu không có transaction đang quản lý
-            if (transaction == null) CloseConnection();
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi ExecuteNonQueryWithParams: " + ex.Message);
+                throw;
+            }
+            finally
+            {
+                // Chỉ đóng kết nối nếu không có transaction đang quản lý
+                if (transaction == null) CloseConnection();
+            }
 
             return count;
         }

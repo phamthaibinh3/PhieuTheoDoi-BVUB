@@ -1,232 +1,361 @@
-﻿using BVUB_PhieuTheoDoi.DAO; // Giả sử DataProvider nằm trong namespace này
+﻿using BVUB_PhieuTheoDoi.DAO;
 using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Windows.Forms;
 using System.Data.SqlClient;
+using System.Windows.Forms;
+using System.Globalization;
 
 namespace BVUB_PhieuTheoDoi
 {
     public partial class fFormUpdatePatient : Form
     {
-        private int currentSheetID;
+        // =========================================================
+        //                 KHAI BÁO BIẾN CỐ ĐỊNH (Tên Bảng)
+        // =========================================================
+        private const string PatientTable = "BenhNhan";
+        private const string KhoaTable = "Khoa";
+        private const string DieuDuongTable = "DieuDuong";
 
-        // Constructor đã được sử dụng đúng cách
-        public fFormUpdatePatient(int sheetId)
+        // Biến lưu Mã Bệnh nhân và Mã Điều dưỡng đang đăng nhập
+        private string CurrentMaBenhNhan;
+        // **LƯU Ý QUAN TRỌNG:** Bạn cần truyền hoặc khởi tạo giá trị này từ Form đăng nhập/Form chính.
+        private string MaDieuDuongLoggedIn = "DD001"; // <--- CẦN THAY ĐỔI THEO THỰC TẾ 
+
+        // =========================================================
+        //                 CONSTRUCTOR & KHỞI TẠO
+        // =========================================================
+        // Constructor chấp nhận MaBenhNhan cần cập nhật
+        public fFormUpdatePatient(string maBenhNhan)
         {
             InitializeComponent();
-            this.currentSheetID = sheetId;
-            this.Text = $"Cập nhật Phiếu Theo Dõi #{sheetId}";
+            this.CurrentMaBenhNhan = maBenhNhan;
 
             this.Load += fFormUpdatePatient_Load;
             this.btnSave.Click += btnSave_Click;
-            this.btnCancel.Click += btnCancel_Click;
 
-            this.chkDiUngCo.CheckedChanged += chkDiUng_CheckedChanged;
-            this.chkDiUngKhong.CheckedChanged += chkDiUng_CheckedChanged;
+            // Đăng ký sự kiện CheckBox Dị ứng
+            // Cần kiểm tra Null để tránh lỗi nếu designer chưa hoàn thiện
+            if (chkDiUngCo != null) this.chkDiUngCo.CheckedChanged += ChkDiUng_CheckedChanged;
+            if (chkDiUngKhong != null) this.chkDiUngKhong.CheckedChanged += ChkDiUng_CheckedChanged;
 
-            SetPatientInfoReadOnly(true);
+            // Thiết lập giá trị mặc định cho ComboBox nếu cần
+            if (cboGioiTinh != null) cboGioiTinh.Items.AddRange(new string[] { "Nam", "Nữ", "Khác" });
+            if (cboPhanCapCS != null) cboPhanCapCS.Items.AddRange(new string[] { "Cấp I", "Cấp II", "Cấp III" });
         }
 
+        // =========================================================
+        //                 SỰ KIỆN LOAD FORM
+        // =========================================================
         private void fFormUpdatePatient_Load(object sender, EventArgs e)
         {
-            LoadMonitoringSheetData(currentSheetID);
+            if (string.IsNullOrEmpty(CurrentMaBenhNhan))
+            {
+                MessageBox.Show("Không tìm thấy Mã Bệnh nhân để cập nhật.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                this.Close();
+                return;
+            }
+
+            // 1. Tải dữ liệu Khoa
+            LoadKhoaData();
+
+            // 2. Hiển thị thông tin Điều dưỡng ký tên (Read-only)
+            DisplayLoggedInNurseName();
+
+            // 3. Tải và hiển thị dữ liệu Bệnh nhân
+            LoadPatientData(CurrentMaBenhNhan);
+
+            // 4. Khởi tạo trạng thái hiển thị dị ứng
+            SetTienSuDiUngVisibility();
         }
 
         // =========================================================
-        // 1. HÀM TẢI DỮ LIỆU SỬ DỤNG DataProvider TRỰC TIẾP
+        //                 HÀM TẢI DỮ LIỆU
         // =========================================================
-        private void LoadMonitoringSheetData(int sheetId)
+
+        private void LoadKhoaData()
         {
+            // Kiểm tra control cboTenKhoa trước khi thao tác
+            if (cboTenKhoa == null) return;
+
             try
             {
-                // Sử dụng câu truy vấn SELECT bạn đã cung cấp để tải dữ liệu
-                string query = $@"
-                    SELECT
-                        P.PatientID, P.MaBenhNhan, P.HoTen, P.Tuoi, P.Phong, P.Giuong, P.ChanDoan, P.TienSuDiUng,
-                        MS.SheetID, MS.ThoiGianTao,
-                        MS.SinhTon_TanSoTho, MS.SinhTon_HuyetAp, MS.ToanTrang_TriGiac, MS.SinhTon_Mach, MS.SinhTon_HuyetAp,
-                        MS.SinhTon_NhietDo, MS.SinhTon_SpO2, MS.SinhTon_TanSoTho, MS.CSCT_CanNang, MS.CSCT_ChieuCao, MS.CSCT_BMI,
-                        MS.TuanHoan_TinhChatMach, MS.TuanHoan_Khac, MS.HoHap_TuTho, MS.HoHap_CheDoTho, MS.HoHap_DungTichSong,
-                        MS.HoHap_ApLucPS, MS.HoHap_ApLucPEEP, MS.HoHap_TanSoThoMay, MS.HoHap_FIO2, MS.TieuHoa_TinhTrangBung,
-                        MS.TieuHoa_Non, MS.TieuHoa_NhuDongRuot, MS.TieuHoa_DaiTien,
-                        MS.DinhDuong_HauMonNhanTao, MS.DinhDuong_CheDoAn, MS.DinhDuong_TinhTrangAn,
-                        MS.TietNieu_HinhThucDiTieu, MS.TietNieu_MauSacNT, MS.TietNieu_SoLuongNT, MS.TietNieu_TieuRatBuot,
-                        MS.TietNieu_BPSD, 
-                        MS.ThanKinh_LoiNoi, MS.ThanKinh_YeuLiet, MS.ThanKinh_Khac,
-                        MS.CXK_GiacNgu, MS.CXK_VanDongCoXuong, MS.CXK_Khac,
-                        MS.NDK_VetThuongLoet, MS.NDK_NhanDinhKhac, MS.NDK_TheoDoiNhapXuat,
-                        MS.TieuHoa_RoiLoanMuoiNuoc, MS.TieuHoa_DayBung
-                        ,MS.ChanDoanDieuDuong, MS.CanThiepDieuDuong
-                    FROM Patient AS P
-                    JOIN MonitoringSheet AS MS ON P.PatientID = MS.PatientID
-                    WHERE MS.SheetID = {sheetId}
-                ";
-
+                string query = $"SELECT * FROM {KhoaTable}";
                 DataTable dt = DataProvider.Instance.ExecuteQuery(query);
 
-                if (dt == null || dt.Rows.Count == 0)
+                cboTenKhoa.DataSource = dt;
+                cboTenKhoa.DisplayMember = "TenKhoa";
+                cboTenKhoa.ValueMember = "KhoaID";
+
+                // Mặc định chọn item đầu tiên nếu có dữ liệu
+                if (cboTenKhoa.Items.Count > 0 && cboTenKhoa.SelectedIndex == -1)
                 {
-                    MessageBox.Show("Không tìm thấy dữ liệu phiếu theo dõi này.", "Lỗi tải dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    this.Close();
-                    return;
+                    cboTenKhoa.SelectedIndex = 0;
                 }
-
-                DataRow row = dt.Rows[0];
-
-                // --- Load thông tin Hành chính ---
-                lblMaBenhNhanValue.Text = row["MaBenhNhan"].ToString();
-                txtHoTen.Text = row["HoTen"].ToString();
-                txtTuoi.Text = row["Tuoi"].ToString();
-                txtPhong.Text = row["Phong"].ToString();
-                txtGiuong.Text = row["Giuong"].ToString();
-                txtChanDoan.Text = row["ChanDoan"].ToString();
-
-                string diUng = row["TienSuDiUng"].ToString();
-                bool coDiUng = !string.IsNullOrWhiteSpace(diUng) && diUng.ToLower() != "không";
-                chkDiUngCo.Checked = coDiUng;
-                chkDiUngKhong.Checked = !coDiUng;
-                txtTienSuDiUng.Text = diUng;
-                txtTienSuDiUng.Enabled = coDiUng;
-
-                // --- Load dữ liệu Phiếu Theo Dõi ---
-
-                // Tab 1. Toàn Trạng
-                txtTriGiac.Text = row["ToanTrang_TriGiac"]?.ToString() ?? string.Empty;
-                // Lưu ý: Cột 'DaNiem' và 'Phu' không có trong SELECT list bạn cung cấp.
-                // Nếu chúng tồn tại, bạn cần kiểm tra lại tên cột. Tôi tạm thời để trống.
-                // txtDaNiem.Text = row["DaNiem"]?.ToString() ?? string.Empty; 
-                // txtPhu.Text = row["Phu"]?.ToString() ?? string.Empty;
-
-                // Tab 2. Sinh Tồn
-                txtMach.Text = row["SinhTon_Mach"]?.ToString() ?? string.Empty;
-                txtHuyetAp.Text = row["SinhTon_HuyetAp"]?.ToString() ?? string.Empty;
-                txtNhietDo.Text = row["SinhTon_NhietDo"]?.ToString() ?? string.Empty;
-                txtSpO2.Text = row["SinhTon_SpO2"]?.ToString() ?? string.Empty;
-                txtTanSoTho.Text = row["SinhTon_TanSoTho"]?.ToString() ?? string.Empty;
-
-                // Tab Chẩn đoán/Can thiệp
-                rtbChanDoanDD.Text = row["ChanDoanDieuDuong"]?.ToString() ?? string.Empty;
-                rtbCanThiepDD.Text = row["CanThiepDieuDuong"]?.ToString() ?? string.Empty;
-
-                // ***** BẠN PHẢI TỰ BỔ SUNG CÁC TRƯỜNG CÒN LẠI VÀO CÁC CONTROLS TƯƠNG ỨNG *****
-                // Ví dụ: txtCanNang.Text = row["CSCT_CanNang"]?.ToString() ?? string.Empty;
-                // **************************************************************************
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi khi tải chi tiết phiếu theo dõi: Vui lòng kiểm tra lại tên cột SQL và lỗi Login Failed. Chi tiết: {ex.Message}", "Lỗi Database", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi tải danh sách Khoa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        // =========================================================
-        // 2. HÀM XỬ LÝ NÚT LƯU - DÙNG DataProvider TRỰC TIẾP
-        // =========================================================
-        private void btnSave_Click(object sender, EventArgs e)
+        private void DisplayLoggedInNurseName()
         {
-            // --- B1: Lấy dữ liệu mới từ các Controls và xử lý dấu nháy đơn ---
-            string triGiac = txtTriGiac.Text.Replace("'", "''");
-            string daNiem = ""; // Bạn cần lấy giá trị từ control tương ứng (thiếu trong designer bạn gửi)
-            string phu = "";    // Bạn cần lấy giá trị từ control tương ứng (thiếu trong designer bạn gửi)
-            string mach = txtMach.Text.Replace("'", "''");
-            string huyetAp = txtHuyetAp.Text.Replace("'", "''");
-            string nhietDo = txtNhietDo.Text.Replace("'", "''");
-            string spO2 = txtSpO2.Text.Replace("'", "''");
-            string tanSoTho = txtTanSoTho.Text.Replace("'", "''");
-            string chanDoanDD = rtbChanDoanDD.Text.Replace("'", "''");
-            string canThiepDD = rtbCanThiepDD.Text.Replace("'", "''");
+            // Kiểm tra control txtDieuDuongKyTen trước khi thao tác
+            if (txtDieuDuongKyTen == null) return;
 
-            // Xử lý tiền sử dị ứng
-            string tienSuDiUng = chkDiUngCo.Checked ? txtTienSuDiUng.Text.Replace("'", "''") : "Không";
-
-            // ***** BẠN PHẢI TỰ BỔ SUNG CÁC TRƯỜNG CÒN LẠI TẠI ĐÂY *****
-            // string canNang = txtCanNang.Text.Replace("'", "''");
-            // string chieuCao = txtChieuCao.Text.Replace("'", "''");
-            // ...
-            // *********************************************************
-
-            // --- B2: Tạo câu lệnh SQL UPDATE (Multiple commands) ---
-            string updateQuery = $@"
-                -- Cập nhật bảng MonitoringSheet
-                UPDATE MonitoringSheet 
-                SET 
-                    ToanTrang_TriGiac = N'{triGiac}',
-                    -- Bạn cần cập nhật các cột 'DaNiem' và 'Phu' nếu chúng tồn tại
-                    SinhTon_Mach = N'{mach}',
-                    SinhTon_HuyetAp = N'{huyetAp}',
-                    SinhTon_NhietDo = N'{nhietDo}',
-                    SinhTon_SpO2 = N'{spO2}',
-                    SinhTon_TanSoTho = N'{tanSoTho}',
-                    ChanDoanDieuDuong = N'{chanDoanDD}',
-                    CanThiepDieuDuong = N'{canThiepDD}',
-                    -- ***** CẦN THÊM TẤT CẢ 20+ CỘT CÒN LẠI VÀO ĐÂY *****
-                    ThoiGianTao = GETDATE() -- Cập nhật thời gian sửa đổi
-                WHERE SheetID = {currentSheetID};
-
-                -- Cập nhật bảng Patient (Chỉ cập nhật Tiền sử dị ứng)
-                UPDATE Patient 
-                SET 
-                    TienSuDiUng = N'{tienSuDiUng}'
-                WHERE PatientID = (SELECT PatientID FROM MonitoringSheet WHERE SheetID = {currentSheetID});
-            ";
-
+            // Hiển thị tên điều dưỡng đang đăng nhập
             try
             {
-                // --- B3: Thực thi query ---
-                int rowsAffected = DataProvider.Instance.ExecuteNonQuery(updateQuery);
-
-                if (rowsAffected > 0)
+                string query = $"SELECT HoTen FROM {DieuDuongTable} WHERE MaDieuDuong = @MaDieuDuong";
+                DataTable result = DataProvider.Instance.ExecuteQueryWithParams(query, new Dictionary<string, object> { { "MaDieuDuong", MaDieuDuongLoggedIn } });
+                if (result.Rows.Count > 0)
                 {
-                    MessageBox.Show("Cập nhật phiếu theo dõi thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
+                    txtDieuDuongKyTen.Text = result.Rows[0]["HoTen"].ToString();
+                    txtDieuDuongKyTen.ReadOnly = true; // Không cho sửa tên người ký
                 }
                 else
                 {
-                    MessageBox.Show("Cập nhật phiếu theo dõi thất bại! Không có dữ liệu nào được thay đổi hoặc lỗi ở database.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    txtDieuDuongKyTen.Text = "Không tìm thấy điều dưỡng";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Lỗi cập nhật SQL: Vui lòng kiểm tra lại cú pháp SQL, tên cột và kết nối database. Chi tiết: {ex.Message}", "Lỗi Hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Lỗi tải thông tin Điều dưỡng: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
+        private void LoadPatientData(string maBenhNhan)
         {
-            this.Close();
-        }
+            // Kiểm tra controls cần thiết
+            if (txtMaBenhNhan == null || txtHoTen == null || cboTenKhoa == null || chkDiUngCo == null || chkDiUngKhong == null || txtTienSuDiUng == null) return;
 
-        // =========================================================
-        // 3. HÀM HỖ TRỢ
-        // =========================================================
-
-        private void SetPatientInfoReadOnly(bool readOnly)
-        {
-            txtHoTen.ReadOnly = readOnly;
-            txtTuoi.ReadOnly = readOnly;
-            txtPhong.ReadOnly = readOnly;
-            txtGiuong.ReadOnly = readOnly;
-            txtChanDoan.ReadOnly = readOnly;
-
-            chkDiUngCo.Enabled = !readOnly;
-            chkDiUngKhong.Enabled = !readOnly;
-            txtTienSuDiUng.ReadOnly = readOnly;
-        }
-
-        private void chkDiUng_CheckedChanged(object sender, EventArgs e)
-        {
-            if (sender == chkDiUngCo && chkDiUngCo.Checked)
+            try
             {
+                string query = $@"
+                    SELECT BN.*, K.TenKhoa 
+                    FROM {PatientTable} BN
+                    LEFT JOIN {KhoaTable} K ON BN.KhoaID = K.KhoaID
+                    WHERE BN.MaBenhNhan = @MaBenhNhan";
+
+                DataTable dt = DataProvider.Instance.ExecuteQueryWithParams(query,
+                    new Dictionary<string, object> { { "MaBenhNhan", maBenhNhan } });
+
+                if (dt.Rows.Count > 0)
+                {
+                    DataRow row = dt.Rows[0];
+
+                    // Thông tin hành chính
+                    txtMaBenhNhan.Text = row["MaBenhNhan"].ToString();
+                    txtHoTen.Text = row["HoTen"].ToString();
+                    txtTuoi.Text = row["Tuoi"] != DBNull.Value ? row["Tuoi"].ToString() : "";
+
+                    // Lựa chọn Giới tính
+                    if (cboGioiTinh != null)
+                    {
+                        cboGioiTinh.SelectedItem = row["GioiTinh"] != DBNull.Value ? row["GioiTinh"].ToString() : null;
+                    }
+
+                    txtPhong.Text = row["Phong"] != DBNull.Value ? row["Phong"].ToString() : "";
+                    txtGiuong.Text = row["Giuong"] != DBNull.Value ? row["Giuong"].ToString() : "";
+                    if (rtbChanDoan != null) rtbChanDoan.Text = row["ChuanDoan"] != DBNull.Value ? row["ChuanDoan"].ToString() : "";
+                    txtSoVaoVien.Text = row["SoVaoVien"] != DBNull.Value ? row["SoVaoVien"].ToString() : "";
+                    if (txtSoTo != null) txtSoTo.Text = row["SoTo"] != DBNull.Value ? row["SoTo"].ToString() : "";
+
+                    // Khoa
+                    if (cboTenKhoa.DataSource != null)
+                    {
+                        cboTenKhoa.SelectedValue = row["KhoaID"] != DBNull.Value ? row["KhoaID"] : null;
+                    }
+
+                    // Tiền sử dị ứng
+                    string tienSuDiUng = row["TienSuDiUng"] != DBNull.Value ? row["TienSuDiUng"].ToString() : string.Empty;
+                    if (string.Equals(tienSuDiUng, "Không", StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(tienSuDiUng))
+                    {
+                        chkDiUngKhong.Checked = true;
+                        chkDiUngCo.Checked = false;
+                        txtTienSuDiUng.Text = string.Empty;
+                    }
+                    else
+                    {
+                        chkDiUngCo.Checked = true;
+                        chkDiUngKhong.Checked = false;
+                        txtTienSuDiUng.Text = tienSuDiUng;
+                    }
+
+                    // Mã BN và Số Vào Viện KHÔNG CHO SỬA
+                    txtMaBenhNhan.ReadOnly = true;
+                    txtSoVaoVien.ReadOnly = true;
+                }
+                else
+                {
+                    MessageBox.Show("Không tìm thấy dữ liệu bệnh nhân.", "Lỗi tải dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải dữ liệu Bệnh nhân: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        //                 LOGIC ẨN/HIỆN TIỀN SỬ DỊ ỨNG
+        // =========================================================
+
+        private void SetTienSuDiUngVisibility()
+        {
+            // Kiểm tra controls cần thiết
+            if (txtTienSuDiUng == null || chkDiUngCo == null) return;
+
+            // Textbox dị ứng chỉ hiện khi checkbox 'Có' được chọn
+            txtTienSuDiUng.Visible = chkDiUngCo.Checked;
+
+            // Nếu không hiện (tức là chọn 'Không'), xóa nội dung
+            if (!chkDiUngCo.Checked)
+            {
+                txtTienSuDiUng.Text = string.Empty;
+            }
+        }
+
+        private void ChkDiUng_CheckedChanged(object sender, EventArgs e)
+        {
+            // Kiểm tra controls cần thiết
+            if (chkDiUngCo == null || chkDiUngKhong == null) return;
+
+            CheckBox current = sender as CheckBox;
+
+            if (current == chkDiUngCo && current.Checked)
+            {
+                // Nếu chọn 'Có', bỏ chọn 'Không'
                 chkDiUngKhong.Checked = false;
-                txtTienSuDiUng.Enabled = true;
-                txtTienSuDiUng.Focus();
             }
-            else if (sender == chkDiUngKhong && chkDiUngKhong.Checked)
+            else if (current == chkDiUngKhong && current.Checked)
             {
+                // Nếu chọn 'Không', bỏ chọn 'Có'
                 chkDiUngCo.Checked = false;
-                txtTienSuDiUng.Enabled = false;
-                txtTienSuDiUng.Text = "Không";
             }
+
+            // Cập nhật trạng thái hiển thị
+            SetTienSuDiUngVisibility();
+        }
+
+        // =========================================================
+        //                 SỰ KIỆN LƯU (UPDATE)
+        // =========================================================
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            // *** BƯỚC KHẮC PHỤC LỖI NULLREFERENCEEXCEPTION ***
+            // Kiểm tra các Controls quan trọng có bị null do lỗi Designer không
+            if (txtHoTen == null || cboTenKhoa == null || chkDiUngCo == null || txtTienSuDiUng == null)
+            {
+                MessageBox.Show("LỖI: Các controls giao diện chưa được khởi tạo đúng cách. Vui lòng kiểm tra file fFormUpdatePatient.Designer.cs.", "Lỗi Controls", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            // ************************************************
+
+            // 1. Kiểm tra thông tin bắt buộc
+            if (string.IsNullOrEmpty(txtHoTen.Text) || cboTenKhoa.SelectedValue == null)
+            {
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin bắt buộc (Họ Tên, Khoa).", "Thiếu thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // 2. Kiểm tra chi tiết dị ứng
+            if (chkDiUngCo.Checked && string.IsNullOrEmpty(txtTienSuDiUng.Text.Trim()))
+            {
+                MessageBox.Show("Vui lòng nhập chi tiết tiền sử dị ứng.", "Thiếu thông tin", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                UpdatePatientData();
+                MessageBox.Show("Cập nhật thông tin Bệnh nhân thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.DialogResult = DialogResult.OK; // Báo cho Form gọi biết đã cập nhật thành công
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi cập nhật Bệnh nhân: " + ex.Message, "Lỗi chung", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // =========================================================
+        //                 HÀM UPDATE BENHNHAN
+        // =========================================================
+        private int UpdatePatientData()
+        {
+            string query = $@"
+                UPDATE {PatientTable} 
+                SET HoTen = @HoTen, 
+                    Tuoi = @Tuoi, 
+                    GioiTinh = @GioiTinh, 
+                    Phong = @Phong, 
+                    Giuong = @Giuong, 
+                    ChuanDoan = @ChuanDoan, 
+                    TienSuDiUng = @TienSuDiUng, 
+                    KhoaID = @KhoaID, 
+                    SoTo = @SoTo
+                WHERE MaBenhNhan = @MaBenhNhan
+            ";
+
+            // Đảm bảo tất cả controls được dùng trong Dictionary đều đã được kiểm tra Null trong btnSave_Click
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "MaBenhNhan", CurrentMaBenhNhan }, // Dùng mã bệnh nhân hiện tại để update
+                { "HoTen", txtHoTen.Text.Trim() },
+                { "Tuoi", ParseInt(txtTuoi.Text) },
+                { "GioiTinh", cboGioiTinh?.SelectedItem?.ToString() ?? (object)DBNull.Value }, // Kiểm tra Null an toàn
+                { "Phong", txtPhong.Text },
+                { "Giuong", txtGiuong.Text },
+                { "ChuanDoan", rtbChanDoan?.Text ?? "" },
+                { "TienSuDiUng", GetTienSuDiUng() }, // Hàm xử lý checkbox
+                { "KhoaID", cboTenKhoa.SelectedValue ?? (object)DBNull.Value }, // Kiểm tra Null an toàn
+                { "SoTo", txtSoTo?.Text ?? "" }
+            };
+
+            // Sử dụng ExecuteNonQueryWithParams
+            return DataProvider.Instance.ExecuteNonQueryWithParams(query, parameters);
+        }
+
+        // =========================================================
+        //                 HÀM HỖ TRỢ CHUYỂN ĐỔI DỮ LIỆU
+        // =========================================================
+
+        // Xử lý TienSuDiUng từ CheckBox
+        private string GetTienSuDiUng()
+        {
+            if (chkDiUngKhong != null && chkDiUngKhong.Checked) return "Không";
+            if (chkDiUngCo != null && chkDiUngCo.Checked) return txtTienSuDiUng?.Text.Trim() ?? "";
+            return null;
+        }
+
+        // Chuyển đổi string sang INT (Có thể NULL)
+        private object ParseInt(string text)
+        {
+            if (int.TryParse(text, out int value))
+            {
+                return value;
+            }
+            return DBNull.Value;
+        }
+
+        // Chuyển đổi string sang DECIMAL (Có thể NULL)
+        private object ParseDecimal(string text)
+        {
+            if (decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal value))
+            {
+                return value;
+            }
+            return DBNull.Value;
+        }
+
+        // Chuyển đổi CheckBox sang BIT (1/0)
+        private int ToBit(CheckBox chk)
+        {
+            return chk != null && chk.Checked ? 1 : 0;
         }
     }
 }

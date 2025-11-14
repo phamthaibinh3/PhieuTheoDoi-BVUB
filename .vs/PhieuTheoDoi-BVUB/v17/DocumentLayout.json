@@ -3,11 +3,23 @@
   "WorkspaceRootPath": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\phieutheodoi-bvub\\dao\\provider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\dao\\provider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|d:\\th\u00E1i b\u00ECnh\\c#\\phieutheodoi-bvub - copy\\phieutheodoi-bvub\\fformupdatepatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\fformupdatepatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\phieutheodoi-bvub\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|d:\\th\u00E1i b\u00ECnh\\c#\\phieutheodoi-bvub - copy\\phieutheodoi-bvub\\fformupdatepatient.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\fformupdatepatient.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|d:\\th\u00E1i b\u00ECnh\\c#\\phieutheodoi-bvub - copy\\phieutheodoi-bvub\\fformupdatepatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\phieutheodoi-bvub\\fformupdatepatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\fformupdatepatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
@@ -17,14 +29,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\phieutheodoi-bvub\\fformaddpatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\fformaddpatient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\phieutheodoi-bvub\\dao\\provider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\dao\\provider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\phieutheodoi-bvub\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{BB778542-93E7-45E8-B1B1-D828B1D897F8}|PhieuTheoDoi-BVUB\\PhieuTheoDoi-BVUB.csproj|solutionrelative:phieutheodoi-bvub\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -34,24 +38,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
+              "Title": "fFormUpdatePatient.cs",
+              "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormUpdatePatient.cs",
+              "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\fFormUpdatePatient.cs",
+              "ToolTip": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormUpdatePatient.cs",
+              "RelativeToolTip": "PhieuTheoDoi-BVUB\\fFormUpdatePatient.cs",
+              "ViewState": "AgIAADQBAAAAAAAAAAAuwGgBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-14T16:19:05.996Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "fFormUpdatePatient.Designer.cs",
               "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormUpdatePatient.Designer.cs",
               "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\fFormUpdatePatient.Designer.cs",
               "ToolTip": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormUpdatePatient.Designer.cs",
               "RelativeToolTip": "PhieuTheoDoi-BVUB\\fFormUpdatePatient.Designer.cs",
-              "ViewState": "AgIAALcBAAAAAAAAAAAuwMUBAAA2AAAAAAAAAA==",
+              "ViewState": "AgIAAOAHAAAAAAAAAAAuwPQHAAA5AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T16:16:40.888Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "fFormUpdatePatient.cs [Design]",
               "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormUpdatePatient.cs",
               "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\fFormUpdatePatient.cs",
@@ -63,20 +80,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "Provider.cs",
               "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\DAO\\Provider.cs",
               "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\DAO\\Provider.cs",
               "ToolTip": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\DAO\\Provider.cs",
               "RelativeToolTip": "PhieuTheoDoi-BVUB\\DAO\\Provider.cs",
-              "ViewState": "AgIAAKgAAAAAAAAAAAAmwNsAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAMkAAAAAAAAAAAAawNQAAAAZAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-14T10:29:08.81Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "fFormAddPatient.Designer.cs",
               "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormAddPatient.Designer.cs",
               "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\fFormAddPatient.Designer.cs",
@@ -84,12 +101,11 @@
               "RelativeToolTip": "PhieuTheoDoi-BVUB\\fFormAddPatient.Designer.cs",
               "ViewState": "AgIAAOAHAAAAAAAAAAAuwBQIAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-14T08:23:37.692Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-14T08:23:37.692Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "fFormAddPatient.cs",
               "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\fFormAddPatient.cs",
               "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\fFormAddPatient.cs",
@@ -97,18 +113,17 @@
               "RelativeToolTip": "PhieuTheoDoi-BVUB\\fFormAddPatient.cs",
               "ViewState": "AgIAALMBAAAAAAAAAAAuwL4BAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-12T07:19:27.911Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-12T07:19:27.911Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 2,
               "Title": "Form1.cs",
               "DocumentMoniker": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\Form1.cs",
               "RelativeDocumentMoniker": "PhieuTheoDoi-BVUB\\Form1.cs",
               "ToolTip": "D:\\Th\u00E1i B\u00ECnh\\C#\\PhieuTheoDoi-BVUB - Copy\\PhieuTheoDoi-BVUB\\Form1.cs",
               "RelativeToolTip": "PhieuTheoDoi-BVUB\\Form1.cs",
-              "ViewState": "AgIAAOQAAAAAAAAAAAAQwPIAAAA7AAAAAAAAAA==",
+              "ViewState": "AgIAAOcAAAAAAAAAAAAQwAEBAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-12T07:38:53.856Z",
               "EditorCaption": ""

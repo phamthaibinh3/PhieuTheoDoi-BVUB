@@ -254,7 +254,7 @@ namespace BVUB_PhieuTheoDoi
             if (cmbMaBenhNhan.SelectedValue is string maBenhNhan && !string.IsNullOrEmpty(maBenhNhan))
             {
                 // Mở Form Cập nhật, truyền MaBenhNhan vào constructor
-                using (fFormAddPatient f = new fFormAddPatient())
+                using (fFormUpdatePatient f = new fFormUpdatePatient(maBenhNhan))
                 {
                     if (f.ShowDialog() == DialogResult.OK)
                     {
