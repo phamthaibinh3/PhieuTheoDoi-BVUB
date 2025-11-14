@@ -1,0 +1,60 @@
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\PhieuTheoDoi-BVUB.exe.config
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\PhieuTheoDoi-BVUB.exe
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\PhieuTheoDoi-BVUB.pdb
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.CrystalReports.Engine.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportSource.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.Shared.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.Windows.Forms.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.DataDefModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.ClientDoc.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.ReportDefModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.Controllers.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CommLayer.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.DataSetConversion.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.Prompting.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.XmlSerialize.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CubeDefModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CommonObjectModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.ObjectFactory.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CommonControls.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\bin\Debug\stdole.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.AssemblyReference.cache
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.fFormReport.resources
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.Form1.resources
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi_BVUB.Properties.Resources.resources
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.GenerateResource.cache
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.CoreCompileInputs.cache
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuThe.E9A7B372.Up2Date
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.exe
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.pdb
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.exe.config
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\PhieuTheoDoi-BVUB.exe.config
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\PhieuTheoDoi-BVUB.exe
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\PhieuTheoDoi-BVUB.pdb
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.CrystalReports.Engine.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportSource.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.Shared.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.Windows.Forms.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.DataDefModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.ClientDoc.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.ReportDefModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.Controllers.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CommLayer.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.DataSetConversion.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.Prompting.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.XmlSerialize.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CubeDefModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CommonObjectModel.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.ObjectFactory.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\CrystalDecisions.ReportAppServer.CommonControls.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\bin\Debug\stdole.dll
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.AssemblyReference.cache
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.exe.config
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.fFormReport.resources
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\BVUB_PhieuTheoDoi.Form1.resources
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi_BVUB.Properties.Resources.resources
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.GenerateResource.cache
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.csproj.CoreCompileInputs.cache
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuThe.E9A7B372.Up2Date
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.exe
+D:\Thái Bình\C#\PhieuTheoDoi-BVUB - Copy\PhieuTheoDoi-BVUB\obj\Debug\PhieuTheoDoi-BVUB.pdb
